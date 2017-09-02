@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<package schemaVersion="1.3" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="PACK.xsd">
+  <name>Unity</name>
+  <description>Unity, Unit Testing for C</description>
+  <vendor>ThrowTheSwitch</vendor>
+  <!-- <license>license.txt</license> -->
+  <url>https://github.com/JonatanAntoni/Unity/archive/</url>
+
+  <releases>
+    <release version="1.0.0-dev1">
+      Initial version
+      Based on Unity release 2.4.1
+    </release>
+  </releases>
+  
+  <conditions>
+    <condition id="Unity Framework">
+      <description>Unity Framework</description>
+      <require Cclass="Unity" Cgroup="Framework"/>
+    </condition>
+  </conditions>
+    
+  <components>
+    <component Cclass="Unity" Cgroup="Framework" Cversion="2.4.1">
+      <description>Unity Test API</description>
+      <files>
+        <file category="include" name="src/"/>
+        <file category="sourceC" name="src/unity.c"/>
+        <file category="sourceC" attr="template" name="template/main.c" version="1.0.0" select="Unity Framework 'main' function."/>
+        <file category="sourceC" attr="template" name="template/test.c" version="1.0.0" select="Unity Framework test."/>
+      </files>
+    </component>
+
+    <component Cclass="Unity" Cgroup="Fixture" Cversion="2.4.1" condition="Unity Framework">
+      <description>Unity Test Fixture</description>
+      <files>
+        <file category="include" name="extras/fixture/src"/>
+        <file category="sourceC" name="extras/fixture/src/unity_fixture.c"/>
+        <file category="sourceC" attr="template" name="extras/fixture/template/main.c" version="1.0.0" select="Unity Fixture 'main' function."/>
+        <file category="sourceC" attr="template" name="extras/fixture/template/fixture.c" version="1.0.0" select="Unity Fixture test fixture group."/>
+      </files>
+    </component>
+  </components>
+
+</package>
