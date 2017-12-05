@@ -8,9 +8,8 @@
   <url>https://github.com/JonatanAntoni/Unity/archive/</url>
 
   <releases>
-    <release version="1.0.0-dev2">
-      Initial version
-      Based on Unity release 2.4.1
+    <release version="1.0.0" date="2017-12-05">
+      Based on Unity release 2.4.3
     </release>
   </releases>
   
@@ -22,7 +21,7 @@
   </conditions>
     
   <components>
-    <component Cclass="Unity" Cgroup="Framework" Cversion="2.4.1">
+    <component Cclass="Unity" Cgroup="Framework" Cversion="2.4.3">
       <description>Unity Test API</description>
       <files>
         <file category="include" name="src/"/>
@@ -32,7 +31,7 @@
       </files>
     </component>
 
-    <component Cclass="Unity" Cgroup="Fixture" Cversion="2.4.1" condition="Unity Framework">
+    <component Cclass="Unity" Cgroup="Fixture" Cversion="2.4.3" condition="Unity Framework">
       <description>Unity Test Fixture</description>
       <files>
         <file category="include" name="extras/fixture/src"/>
