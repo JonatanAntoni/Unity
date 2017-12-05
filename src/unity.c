@@ -4,6 +4,7 @@
     [Released under MIT License. Please refer to license.txt for details]
 ============================================================================ */
 
+#define UNITY_INCLUDE_SETUP_STUBS
 #include "unity.h"
 #include <stddef.h>
 
@@ -19,14 +20,24 @@ void UNITY_OUTPUT_CHAR(int);
 
 struct UNITY_STORAGE_T Unity;
 
+#ifdef UNITY_OUTPUT_COLOR
+static const char UnityStrOk[]                     = "\033[42mOK\033[00m";
+static const char UnityStrPass[]                   = "\033[42mPASS\033[00m";
+static const char UnityStrFail[]                   = "\033[41mFAIL\033[00m";
+static const char UnityStrIgnore[]                 = "\033[43mIGNORE\033[00m";
+#else
 static const char UnityStrOk[]                     = "OK";
 static const char UnityStrPass[]                   = "PASS";
 static const char UnityStrFail[]                   = "FAIL";
 static const char UnityStrIgnore[]                 = "IGNORE";
+#endif
 static const char UnityStrNull[]                   = "NULL";
 static const char UnityStrSpacer[]                 = ". ";
 static const char UnityStrExpected[]               = " Expected ";
 static const char UnityStrWas[]                    = " Was ";
+static const char UnityStrGt[]                     = " to be greater than ";
+static const char UnityStrLt[]                     = " to be less than ";
+static const char UnityStrOrEqual[]                = "or equal to ";
 static const char UnityStrElement[]                = " Element ";
 static const char UnityStrByte[]                   = " Byte ";
 static const char UnityStrMemory[]                 = " Memory Mismatch.";
@@ -81,6 +92,18 @@ void UnityPrint(const char* string)
                 UNITY_OUTPUT_CHAR('\\');
                 UNITY_OUTPUT_CHAR('n');
             }
+#ifdef UNITY_OUTPUT_COLOR
+            /* print ANSI escape code */
+            else if (*pch == 27 && *(pch + 1) == '[')
+            {
+                while (*pch && *pch != 'm')
+                {
+                    UNITY_OUTPUT_CHAR(*pch);
+                    pch++;
+                }
+                UNITY_OUTPUT_CHAR('m');
+            }
+#endif
             /* unprintable characters are shown as codes */
             else
             {
@@ -523,6 +546,45 @@ void UnityAssertEqualNumber(const UNITY_INT expected,
         UnityPrintNumberByStyle(expected, style);
         UnityPrint(UnityStrWas);
         UnityPrintNumberByStyle(actual, style);
+        UnityAddMsgIfSpecified(msg);
+        UNITY_FAIL_AND_BAIL;
+    }
+}
+
+/*-----------------------------------------------*/
+void UnityAssertGreaterOrLessOrEqualNumber(const UNITY_INT threshold,
+                                           const UNITY_INT actual,
+                                           const UNITY_COMPARISON_T compare,
+                                           const char *msg,
+                                           const UNITY_LINE_TYPE lineNumber,
+                                           const UNITY_DISPLAY_STYLE_T style)
+{
+    int failed = 0;
+    RETURN_IF_FAIL_OR_IGNORE;
+
+    if (threshold == actual && compare & UNITY_EQUAL_TO) return;
+    if (threshold == actual) failed = 1;
+
+    if ((style & UNITY_DISPLAY_RANGE_INT) == UNITY_DISPLAY_RANGE_INT)
+    {
+        if (actual > threshold && compare & UNITY_SMALLER_THAN) failed = 1;
+        if (actual < threshold && compare & UNITY_GREATER_THAN) failed = 1;
+    }
+    else /* UINT or HEX */
+    {
+        if ((UNITY_UINT)actual > (UNITY_UINT)threshold && compare & UNITY_SMALLER_THAN) failed = 1;
+        if ((UNITY_UINT)actual < (UNITY_UINT)threshold && compare & UNITY_GREATER_THAN) failed = 1;
+    }
+
+    if (failed)
+    {
+        UnityTestResultsFailBegin(lineNumber);
+        UnityPrint(UnityStrExpected);
+        UnityPrintNumberByStyle(actual, style);
+        if (compare & UNITY_GREATER_THAN) UnityPrint(UnityStrGt);
+        if (compare & UNITY_SMALLER_THAN) UnityPrint(UnityStrLt);
+        if (compare & UNITY_EQUAL_TO)     UnityPrint(UnityStrOrEqual);
+        UnityPrintNumberByStyle(threshold, style);
         UnityAddMsgIfSpecified(msg);
         UNITY_FAIL_AND_BAIL;
     }
@@ -1027,7 +1089,7 @@ void UnityAssertEqualStringArray(UNITY_INTERNAL_PTR expected,
 {
     UNITY_UINT32 i = 0;
     UNITY_UINT32 j = 0;
-    const char* exp = NULL;
+    const char* expd = NULL;
     const char* act = NULL;
 
     RETURN_IF_FAIL_OR_IGNORE;
@@ -1050,7 +1112,7 @@ void UnityAssertEqualStringArray(UNITY_INTERNAL_PTR expected,
 
     if (flags != UNITY_ARRAY_TO_ARRAY)
     {
-        exp = (const char*)expected;
+        expd = (const char*)expected;
     }
 
     do
@@ -1058,15 +1120,15 @@ void UnityAssertEqualStringArray(UNITY_INTERNAL_PTR expected,
         act = actual[j];
         if (flags == UNITY_ARRAY_TO_ARRAY)
         {
-            exp = ((const char* const*)expected)[j];
+            expd = ((const char* const*)expected)[j];
         }
 
         /* if both pointers not null compare the strings */
-        if (exp && act)
+        if (expd && act)
         {
-            for (i = 0; exp[i] || act[i]; i++)
+            for (i = 0; expd[i] || act[i]; i++)
             {
-                if (exp[i] != act[i])
+                if (expd[i] != act[i])
                 {
                     Unity.CurrentTestFailed = 1;
                     break;
@@ -1075,7 +1137,7 @@ void UnityAssertEqualStringArray(UNITY_INTERNAL_PTR expected,
         }
         else
         { /* handle case of one pointers being null (if both null, test should pass) */
-            if (exp != act)
+            if (expd != act)
             {
                 Unity.CurrentTestFailed = 1;
             }
@@ -1089,7 +1151,7 @@ void UnityAssertEqualStringArray(UNITY_INTERNAL_PTR expected,
                 UnityPrint(UnityStrElement);
                 UnityPrintNumberUnsigned(j);
             }
-            UnityPrintExpectedAndActualStrings(exp, act);
+            UnityPrintExpectedAndActualStrings(expd, act);
             UnityAddMsgIfSpecified(msg);
             UNITY_FAIL_AND_BAIL;
         }
@@ -1263,17 +1325,6 @@ void UnityIgnore(const char* msg, const UNITY_LINE_TYPE line)
     }
     UNITY_IGNORE_AND_BAIL;
 }
-
-/*-----------------------------------------------*/
-#if defined(UNITY_WEAK_ATTRIBUTE)
-  UNITY_WEAK_ATTRIBUTE void setUp(void) { }
-  UNITY_WEAK_ATTRIBUTE void tearDown(void) { }
-#elif defined(UNITY_WEAK_PRAGMA)
-  #pragma weak setUp
-  void setUp(void) { }
-  #pragma weak tearDown
-  void tearDown(void) { }
-#endif
 
 /*-----------------------------------------------*/
 void UnityDefaultTestRun(UnityTestFunction Func, const char* FuncName, const int FuncLineNum)
