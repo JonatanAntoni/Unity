@@ -8,6 +8,9 @@
   <url>https://github.com/JonatanAntoni/Unity/archive/</url>
 
   <releases>
+    <release version="1.0.1-dev1">
+      Active development...
+    </release>
     <release version="1.0.0" date="2017-12-05">
       Based on Unity release 2.4.3
     </release>
