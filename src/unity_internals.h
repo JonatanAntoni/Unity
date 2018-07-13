@@ -241,30 +241,30 @@ typedef UNITY_FLOAT_TYPE UNITY_FLOAT;
  * Output Method: stdout (DEFAULT)
  *-------------------------------------------------------*/
 #ifndef UNITY_OUTPUT_CHAR
-/* Default to using putchar, which is defined in stdio.h */
-#include <stdio.h>
-#define UNITY_OUTPUT_CHAR(a) (void)putchar(a)
+  /* Default to using putchar, which is defined in stdio.h */
+  #include <stdio.h>
+  #define UNITY_OUTPUT_CHAR(a) (void)putchar(a)
 #else
   /* If defined as something else, make sure we declare it here so it's ready for use */
   #ifdef UNITY_OUTPUT_CHAR_HEADER_DECLARATION
-extern void UNITY_OUTPUT_CHAR_HEADER_DECLARATION;
+    extern void UNITY_OUTPUT_CHAR_HEADER_DECLARATION;
   #endif
 #endif
 
 #ifndef UNITY_OUTPUT_FLUSH
-#ifdef UNITY_USE_FLUSH_STDOUT
-/* We want to use the stdout flush utility */
-#include <stdio.h>
-#define UNITY_OUTPUT_FLUSH() (void)fflush(stdout)
+  #ifdef UNITY_USE_FLUSH_STDOUT
+    /* We want to use the stdout flush utility */
+    #include <stdio.h>
+    #define UNITY_OUTPUT_FLUSH() (void)fflush(stdout)
+  #else
+    /* We've specified nothing, therefore flush should just be ignored */
+    #define UNITY_OUTPUT_FLUSH()
+  #endif
 #else
-/* We've specified nothing, therefore flush should just be ignored */
-#define UNITY_OUTPUT_FLUSH()
-#endif
-#else
-/* We've defined flush as something else, so make sure we declare it here so it's ready for use */
-#ifdef UNITY_OUTPUT_FLUSH_HEADER_DECLARATION
-extern void UNITY_OMIT_OUTPUT_FLUSH_HEADER_DECLARATION;
-#endif
+  /* If defined as something else, make sure we declare it here so it's ready for use */
+  #ifdef UNITY_OUTPUT_FLUSH_HEADER_DECLARATION
+    extern void UNITY_OUTPUT_FLUSH_HEADER_DECLARATION;
+  #endif
 #endif
 
 #ifndef UNITY_OUTPUT_FLUSH
@@ -422,8 +422,8 @@ void UnityDefaultTestRun(UnityTestFunction Func, const char* FuncName, const int
 #define UNITY_SET_DETAILS(d1,d2)
 #else
 #define UNITY_CLR_DETAILS()      { Unity.CurrentDetail1 = 0;   Unity.CurrentDetail2 = 0;  }
-#define UNITY_SET_DETAIL(d1)     { Unity.CurrentDetail1 = d1;  Unity.CurrentDetail2 = 0;  }
-#define UNITY_SET_DETAILS(d1,d2) { Unity.CurrentDetail1 = d1;  Unity.CurrentDetail2 = d2; }
+#define UNITY_SET_DETAIL(d1)     { Unity.CurrentDetail1 = (d1);  Unity.CurrentDetail2 = 0;  }
+#define UNITY_SET_DETAILS(d1,d2) { Unity.CurrentDetail1 = (d1);  Unity.CurrentDetail2 = (d2); }
 
 #ifndef UNITY_DETAIL1_NAME
 #define UNITY_DETAIL1_NAME "Function"
@@ -442,9 +442,9 @@ void UnityPrint(const char* string);
 void UnityPrintLen(const char* string, const UNITY_UINT32 length);
 void UnityPrintMask(const UNITY_UINT mask, const UNITY_UINT number);
 void UnityPrintNumberByStyle(const UNITY_INT number, const UNITY_DISPLAY_STYLE_T style);
-void UnityPrintNumber(const UNITY_INT number);
+void UnityPrintNumber(const UNITY_INT number_to_print);
 void UnityPrintNumberUnsigned(const UNITY_UINT number);
-void UnityPrintNumberHex(const UNITY_UINT number, const char nibbles);
+void UnityPrintNumberHex(const UNITY_UINT number, const char nibbles_to_print);
 
 #ifndef UNITY_EXCLUDE_FLOAT_PRINT
 void UnityPrintFloat(const UNITY_DOUBLE input_number);
@@ -518,9 +518,9 @@ void UnityAssertNumbersWithin(const UNITY_UINT delta,
                               const UNITY_LINE_TYPE lineNumber,
                               const UNITY_DISPLAY_STYLE_T style);
 
-void UnityFail(const char* message, const UNITY_LINE_TYPE line);
+void UnityFail(const char* msg, const UNITY_LINE_TYPE line);
 
-void UnityIgnore(const char* message, const UNITY_LINE_TYPE line);
+void UnityIgnore(const char* msg, const UNITY_LINE_TYPE line);
 
 #ifndef UNITY_EXCLUDE_FLOAT
 void UnityAssertFloatsWithin(const UNITY_FLOAT delta,
@@ -748,18 +748,18 @@ int UnityTestMatches(void);
 #define UNITY_TEST_ASSERT_EQUAL_STRING_ARRAY(expected, actual, num_elements, line, message)      UnityAssertEqualStringArray((UNITY_INTERNAL_PTR)(expected), (const char**)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_ARRAY_TO_ARRAY)
 #define UNITY_TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, actual, len, num_elements, line, message) UnityAssertEqualMemory((UNITY_INTERNAL_PTR)(expected), (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(len), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_ARRAY_TO_ARRAY)
 
-#define UNITY_TEST_ASSERT_EACH_EQUAL_INT(expected, actual, num_elements, line, message)          UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)              expected, sizeof(int)),  (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT,     UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_INT8(expected, actual, num_elements, line, message)         UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT8  )expected, 1),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT8,    UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_INT16(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT16 )expected, 2),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT16,   UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_INT32(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT32 )expected, 4),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT32,   UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT(expected, actual, num_elements, line, message)         UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)              expected, sizeof(unsigned int)), (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT,    UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT8(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_UINT8 )expected, 1),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT8,   UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT16(expected, actual, num_elements, line, message)       UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_UINT16)expected, 2),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT16,  UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT32(expected, actual, num_elements, line, message)       UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_UINT32)expected, 4),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT32,  UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_HEX8(expected, actual, num_elements, line, message)         UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT8  )expected, 1),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_HEX8,    UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_HEX16(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT16 )expected, 2),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_HEX16,   UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_HEX32(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT32 )expected, 4),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_HEX32,   UNITY_ARRAY_TO_VAL)
-#define UNITY_TEST_ASSERT_EACH_EQUAL_PTR(expected, actual, num_elements, line, message)          UnityAssertEqualIntArray(UnityNumToPtr((UNITY_PTR_TO_INT)       expected, sizeof(int*)), (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_POINTER, UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_INT(expected, actual, num_elements, line, message)          UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)              (expected), sizeof(int)),  (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT,     UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_INT8(expected, actual, num_elements, line, message)         UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT8  )(expected), 1),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT8,    UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_INT16(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT16 )(expected), 2),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT16,   UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_INT32(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT32 )(expected), 4),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_INT32,   UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT(expected, actual, num_elements, line, message)         UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)              (expected), sizeof(unsigned int)), (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT,    UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT8(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_UINT8 )(expected), 1),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT8,   UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT16(expected, actual, num_elements, line, message)       UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_UINT16)(expected), 2),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT16,  UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_UINT32(expected, actual, num_elements, line, message)       UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_UINT32)(expected), 4),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_UINT32,  UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_HEX8(expected, actual, num_elements, line, message)         UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT8  )(expected), 1),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_HEX8,    UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_HEX16(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT16 )(expected), 2),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_HEX16,   UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_HEX32(expected, actual, num_elements, line, message)        UnityAssertEqualIntArray(UnityNumToPtr((UNITY_INT)(UNITY_INT32 )(expected), 4),            (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_HEX32,   UNITY_ARRAY_TO_VAL)
+#define UNITY_TEST_ASSERT_EACH_EQUAL_PTR(expected, actual, num_elements, line, message)          UnityAssertEqualIntArray(UnityNumToPtr((UNITY_PTR_TO_INT)       (expected), sizeof(int*)), (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_DISPLAY_STYLE_POINTER, UNITY_ARRAY_TO_VAL)
 #define UNITY_TEST_ASSERT_EACH_EQUAL_STRING(expected, actual, num_elements, line, message)       UnityAssertEqualStringArray((UNITY_INTERNAL_PTR)(expected), (const char**)(actual), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_ARRAY_TO_VAL)
 #define UNITY_TEST_ASSERT_EACH_EQUAL_MEMORY(expected, actual, len, num_elements, line, message)  UnityAssertEqualMemory((UNITY_INTERNAL_PTR)(expected), (UNITY_INTERNAL_PTR)(actual), (UNITY_UINT32)(len), (UNITY_UINT32)(num_elements), (message), (UNITY_LINE_TYPE)(line), UNITY_ARRAY_TO_VAL)
 
