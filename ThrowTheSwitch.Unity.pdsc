@@ -27,8 +27,10 @@
     <component Cclass="Unity" Cgroup="Framework" Cversion="2.4.3">
       <description>Unity Test API</description>
       <files>
-        <file category="include" name="src/"/>
+        <file category="include" name="src"/>
+        <file category="header"  name="src/unity.h"/>
         <file category="sourceC" name="src/unity.c"/>
+        <file category="header"  attr="config"   name="template/unity_config.h"  version="1.0.0"/>
         <file category="sourceC" attr="template" name="template/main.c" version="1.0.0" select="Unity Framework 'main' function."/>
         <file category="sourceC" attr="template" name="template/test.c" version="1.0.0" select="Unity Framework test."/>
       </files>
@@ -38,6 +40,7 @@
       <description>Unity Test Fixture</description>
       <files>
         <file category="include" name="extras/fixture/src"/>
+        <file category="header"  name="extras/fixture/src/unity_fixture.h"/>
         <file category="sourceC" name="extras/fixture/src/unity_fixture.c"/>
         <file category="sourceC" attr="template" name="extras/fixture/template/main.c" version="1.0.0" select="Unity Fixture 'main' function."/>
         <file category="sourceC" attr="template" name="extras/fixture/template/fixture.c" version="1.0.0" select="Unity Fixture test fixture group."/>
