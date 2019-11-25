@@ -10,7 +10,7 @@ matrix:
       compiler: gcc
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then rvm install 2.1 && rvm use 2.1 && ruby -v; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then rvm install 2.3 && rvm use 2.3 && ruby -v; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install --assume-yes --quiet gcc-multilib; fi
 install:
   - gem install rspec
@@ -22,6 +22,9 @@ script:
   - make -s DEBUG=-m32 UNITY_SUPPORT_64= #32-bit build without 64-bit types
   - make -s UNITY_INCLUDE_DOUBLE= # without double
   - cd ../extras/fixture/test && rake ci
+  - make -s default noStdlibMalloc
+  - make -s C89
+  - cd ../../../extras/memory/test && rake ci
   - make -s default noStdlibMalloc
   - make -s C89
   - cd ../../../examples/example_1 && make -s ci

@@ -3,15 +3,12 @@ ifeq ($(shell uname -s), Darwin)
 CC = clang
 endif
 #DEBUG = -O0 -g
-CFLAGS += -std=c99 -pedantic -Wall -Wextra -Werror
+CFLAGS += -std=c99 -pedantic -Wall -Wextra -Werror -DUNITY_FIXTURE_NO_EXTRAS
 CFLAGS += $(DEBUG)
-DEFINES = -D UNITY_OUTPUT_CHAR=UnityOutputCharSpy_OutputChar
-DEFINES += -D UNITY_OUTPUT_CHAR_HEADER_DECLARATION=UnityOutputCharSpy_OutputChar\(int\)
 SRC = ../src/unity_fixture.c \
       ../../../src/unity.c   \
       unity_fixture_Test.c   \
       unity_fixture_TestRunner.c \
-      unity_output_Spy.c     \
       main/AllTests.c
 
 INC_DIR = -I../src -I../../../src/

@@ -41,6 +41,7 @@ CFLAGS += -Wno-unknown-pragmas
 CFLAGS += -Wstrict-prototypes
 CFLAGS += -Wundef
 CFLAGS += -Wold-style-definition
+#CFLAGS += -Wno-misleading-indentation
 
 TARGET_BASE1=all_tests
 TARGET1 = $(TARGET_BASE1)$(TARGET_EXTENSION)
@@ -55,7 +56,7 @@ SRC_FILES1=\
   test/test_runners/TestProductionCode2_Runner.c \
   test/test_runners/all_tests.c
 INC_DIRS=-Isrc -I$(UNITY_ROOT)/src -I$(UNITY_ROOT)/extras/fixture/src
-SYMBOLS=
+SYMBOLS=-DUNITY_FIXTURE_NO_EXTRAS
 
 all: clean default
 
